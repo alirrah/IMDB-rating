@@ -4,7 +4,11 @@
 #include <vector>
 #include <cmath>
 #include <set>
+#include <climits>
 using namespace std;
+
+#define pause system("pause")
+#define clean system("cls")
 
 class imdbMovie
 {
@@ -123,20 +127,22 @@ public:
     //print
     void print(int i)
     {
-        cout <<'(' << i + 1 << ")\t" << this->titleId << '\t' << this->ordering << '\t'<< this->title << '\t' << this->region << '\t' << this->language << '\t';
-        for(auto it = this->types.begin(); it != this->types.end(); it++)
-            cout << *it <<' ';
+        cout << '(' << i + 1 << ")\t" << this->titleId << '\t' << this->ordering << '\t' << this->title << '\t' << this->region << '\t' << this->language << '\t';
+        for (auto it = this->types.begin(); it != this->types.end(); it++)
+            cout << *it << ' ';
         cout << '\t';
-        for(auto it = this->attributes.begin(); it != this->attributes.end(); it++)
-            cout << *it <<' ';
-        cout << '\t' <<  boolalpha <<this->isOriginalTitle << '\t' << this->averageRating << '\t' << this->numVotes << endl;
+        for (auto it = this->attributes.begin(); it != this->attributes.end(); it++)
+            cout << *it << ' ';
+        cout << '\t' << boolalpha << this->isOriginalTitle << '\t' << this->averageRating << '\t' << this->numVotes << endl;
     }
 };
-class user{
+class user
+{
 private:
     string username;
     string password;
     set<string> ratedFilm;
+
 public:
     //setter
     void set_username(string username)
@@ -147,7 +153,8 @@ public:
     {
         this->password = password;
     }
-    void set_ratedFilm(set<string> ratedFilm){
+    void set_ratedFilm(set<string> ratedFilm)
+    {
         this->ratedFilm = ratedFilm;
     }
     //getter
@@ -176,7 +183,7 @@ public:
     //operator
     bool operator==(user second)
     {
-        if(this->username == second.username && this->password == second.password)
+        if (this->username == second.username && this->password == second.password)
             return true;
         return false;
     }
@@ -193,7 +200,135 @@ public:
     }
 };
 
+vector<imdbMovie> readFile();
+
 int main()
 {
+    vector<imdbMovie> film = readFile();
     return 0;
+}
+
+vector<imdbMovie> readFile()
+{
+    try
+    {
+        vector<imdbMovie> tmp;
+        FILE *fptr;
+        int j;
+        char fileSentence[1000];
+        fptr = fopen("title.akas.txt", "r");
+        if (fptr == NULL)
+            throw "Error!!! title.akas.txt could not be opened";
+        fgets(fileSentence, 1000, fptr);
+        while (fgets(fileSentence, 1000, fptr))
+        {
+            string sentence = "";
+            j = 0;
+            imdbMovie temp;
+            for (int i = 0; fileSentence[i] != 0; i++)
+            {
+                if (fileSentence[i] != '\t')
+                    sentence += fileSentence[i];
+                else
+                {
+                    list<string> t;
+                    string tmpSentence = "";
+                    switch (j)
+                    {
+                    case 0:
+                        temp.set_titleId(sentence);
+                        break;
+                    case 1:
+                        temp.set_ordering(stoi(sentence));
+                        break;
+                    case 2:
+                        temp.set_title(sentence);
+                        break;
+                    case 3:
+                        temp.set_region(sentence);
+                        break;
+                    case 4:
+                        temp.set_laguage(sentence);
+                        break;
+                    case 5:
+                        for (int k = 0; k < sentence.size(); k++)
+                        {
+                            if (sentence[k] != ' ')
+                                tmpSentence += sentence[k];
+                            else
+                            {
+                                t.push_back(tmpSentence);
+                                tmpSentence.clear();
+                            }
+                        }
+                        t.push_back(tmpSentence);
+                        tmpSentence.clear();
+                        temp.set_types(t);
+                        break;
+                    case 6:
+                        for (int k = 0; k < sentence.size(); k++)
+                        {
+                            if (sentence[k] != ' ')
+                                tmpSentence += sentence[k];
+                            else
+                            {
+                                t.push_back(tmpSentence);
+                                tmpSentence.clear();
+                            }
+                        }
+                        t.push_back(tmpSentence);
+                        tmpSentence.clear();
+                        temp.set_attributes(t);
+                        break;
+                    }
+                    j++;
+                    sentence.clear();
+                }
+            }
+            if (sentence == "0\n")
+                temp.set_isOriginalTitle(false);
+            else
+                temp.set_isOriginalTitle(true);
+            tmp.push_back(temp);
+        }
+        fclose(fptr);
+        FILE *fp;
+        fp = fopen("title.ratings.txt", "r");
+        if (fp == NULL)
+            throw "Error!!! title.ratings.txt could not be opened";
+        fgets(fileSentence, 1000, fp);
+        while (fgets(fileSentence, 1000, fp))
+        {
+            string tmp_sentence[3], sentense = "";
+            j = 0;
+            for (int i = 0; fileSentence[i] != '\n'; i++)
+            {
+                if (fileSentence[i] != '\t')
+                    sentense += fileSentence[i];
+                else
+                {
+                    tmp_sentence[j++] = sentense;
+                    sentense.clear();
+                }
+            }
+            tmp_sentence[2] = sentense;
+            for (auto itr = tmp.begin(); itr != tmp.end(); itr++)
+            {
+                if (itr->get_titleId() == tmp_sentence[0])
+                {
+                    itr->set_averageRating(stod(tmp_sentence[1]));
+                    itr->set_numVotes(stoi(tmp_sentence[2]));
+                    break;
+                }
+            }
+        }
+        fclose(fp);
+        return tmp;
+    }
+    catch (char const *message)
+    {
+        cout << message << endl;
+        pause;
+        exit(1);
+    }
 }
