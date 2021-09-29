@@ -5,6 +5,7 @@
 #include <cmath>
 #include <set>
 #include <climits>
+#include <cstring>
 using namespace std;
 
 #define pause system("pause")
@@ -201,10 +202,57 @@ public:
 };
 
 vector<imdbMovie> readFile();
+bool vote(vector<imdbMovie> &, user &);
+int menu(vector<user> &, vector<imdbMovie> &, bool &);
 
 int main()
 {
     vector<imdbMovie> film = readFile();
+    bool change = false;
+    vector<user> member;
+    while(menu(member, film, change));
+    if(change){
+        try
+        {
+            vector<imdbMovie> tmp;
+            FILE *fptr;
+            char sentence[1000];
+            string tmpSentence = "tconst\taverageRating\tnumVotes";
+            fptr = fopen("C:/Users/pajoh/Desktop/title.akas.txt", "w");
+            if (fptr == NULL)
+                throw "Error!!! title.akas.txt could not be opened";
+            strcpy(sentence, tmpSentence.c_str());
+            fputs(sentence, fptr);
+            for(auto itr = film.begin(); itr != film.end(); itr++)
+            {
+                tmpSentence.clear();
+                tmpSentence = '\n' + itr->get_titleId() + '\t';
+                string tmp = to_string(itr->get_averageRating());
+                for(int i = 0; i < tmp.size(); i++)
+                {
+                    if(tmp[i] == '.')
+                    {
+                        tmpSentence += tmp[i] ;
+                        tmpSentence += tmp[i + 1];
+                        break;
+                    }
+                    else
+                        tmpSentence += tmp[i];
+                }
+                tmpSentence += '\t' ;
+                tmpSentence += to_string(itr->get_numVotes());
+                strcpy(sentence, tmpSentence.c_str());
+                fputs(sentence, fptr);
+            }
+            fclose(fptr);
+        }
+        catch (char const *message)
+        {
+            cout << message << endl;
+            pause;
+            exit(1);
+        }
+    }
     return 0;
 }
 
@@ -330,5 +378,155 @@ vector<imdbMovie> readFile()
         cout << message << endl;
         pause;
         exit(1);
+    }
+}
+
+bool vote(vector<imdbMovie> &film, user &member)
+{
+    bool change = false;
+    int row ;
+    double rate;
+    while(true)
+    {
+        try
+        {
+            clean;
+            cout << "row\ttitleId\tordering\ttitle\tregion\tlanguage\ttypes\tattributes\tisOriginalTitle\taverageRating\tnumVotes" << endl;
+            for(int i = 0 ; i < film.size(); i++)
+                film[i].print(i);
+            cout << "\nselect the movie by row(1 - " << film.size() << ") [(0) Exit] : ";
+            cin >> row;
+            //input validation
+            while(cin.fail())
+            {
+                cin.clear();
+                cin.ignore(INT_MAX, '\n');
+                throw "\n\nError!!! You can only enter number";
+            }
+            if(row < 0 || row > film.size())
+                throw "\n\nError!!! You enter a number out of range";
+            if (row == 0)
+                break;
+            if(member.get_ratedFilm().count(film[row -1 ].get_titleId()))
+                throw "\n\nError!!! You have already voted for this movie";
+            cout  << "\nrow : " << row << endl;
+            row--;
+            cout << "titleId : " << film[row].get_titleId() << endl;
+            cout << "ordering : " << film[row].get_ordering() << endl;
+            cout << "title : " << film[row].get_title() << endl;
+            cout << "region : " << film[row].get_region() << endl;
+            cout << "language : " << film[row].get_laguage() << endl;
+            cout << "types : " ;
+            list<string> itr_type = film[row].get_types();
+            for(auto it = itr_type.begin(); it != itr_type.end(); it++)
+                cout << *it <<' ';
+            cout << "\nattributes : " ;
+            list<string> itr_atttributes = film[row].get_attributes();
+            for(auto it = itr_atttributes.begin(); it != itr_atttributes.end(); it++)
+                cout << *it <<' ';
+            cout << boolalpha << "\nisOriginalTitle : " << film[row].get_isOriginalTitle() << endl;
+            cout << "averageRating : " << film[row].get_averageRating() << endl;
+            cout << "numVotes : " << film[row].get_numVotes() << endl;
+            cout << "\nyour rate (0 - 10) : ";
+            cin >> rate;
+            //input validation
+            while(cin.fail())
+            {
+                cin.clear();
+                cin.ignore(INT_MAX, '\n');
+                throw "\n\nError!!! You can only enter number";
+            }
+            if(rate < 0 || rate > 10)
+                throw "\n\nError!!! You enter a number out of range";
+            member.Voting(film, row, rate);
+            member.addFilm(film[row].get_titleId());
+            change = true;
+        }
+        catch (char const *message)
+        {
+            cout << message << endl;
+            pause;
+        }
+    }
+    return change;
+}
+
+int menu(vector<user> &member, vector<imdbMovie> &film, bool &change)
+{
+    /*
+0 -> finish
+1 -> finish successfully
+2 -> error
+*/
+    try
+    {
+        clean;
+        int number;
+        string username, password;
+        user tmp;
+        cout << "--------- Welcome to the IMDb Rating System ---------" << endl;
+        cout << "(1) Rating\n(2) Exit\nEnter a number : ";
+        cin >> number;
+        //input validation
+        while(cin.fail())
+        {
+            cin.clear();
+            cin.ignore(INT_MAX, '\n');
+            throw "\n\nError!!! You can only enter number";
+        }
+        switch (number)
+        {
+        case 1:
+            cout << "\n(1) Signup\n(2) Login\nEnter a number : ";
+            cin >> number;
+            //input validation
+            while(cin.fail())
+            {
+                cin.clear();
+                cin.ignore(INT_MAX, '\n');
+                throw "\n\nError!!! You can only enter number";
+            }
+            cin.ignore();
+            cout << "\nEnter your username: ";
+            getline(cin, username);
+            cout << "Enter your password: ";
+            getline(cin, password);
+            tmp.set_username(username);
+            tmp.set_password(password);
+            tmp.set_ratedFilm({});
+            switch (number)
+            {
+            case 1:
+                for(int i = 0; i < member.size(); i++)
+                    if(member[i] == tmp)
+                    {
+                        tmp.set_ratedFilm(member[i].get_ratedFilm());
+                        cout << "\n\nYou have successfully logged in" << endl;
+                        pause;
+                        change = vote(film, tmp);
+                        return 1;
+                    }
+                throw "\n\nWarning!!! Your information  is not found. Please login";
+            case 2:
+                member.push_back(tmp);
+                cout << "\n\nYour information  is successfully registered" << endl;
+                pause;
+                change = vote(film, tmp);
+                return 1;
+            default:
+                throw "\n\nError!!! You enter a number out of range";
+            }
+            return 1;
+        case 2:
+            return 0;
+        default:
+            throw "\n\nError!!! You enter a number out of range";
+        }
+    }
+    catch (char const *message)
+    {
+        cout << message << endl;
+        pause;
+        return 2;
     }
 }
