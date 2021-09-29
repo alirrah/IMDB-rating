@@ -6,6 +6,7 @@
 #include <set>
 #include <climits>
 #include <cstring>
+#include <algorithm>
 using namespace std;
 
 #define pause system("pause")
@@ -204,6 +205,8 @@ public:
 vector<imdbMovie> readFile();
 bool vote(vector<imdbMovie> &, user &);
 int menu(vector<user> &, vector<imdbMovie> &, bool &);
+void showTop(vector<imdbMovie>);
+bool comparator(const imdbMovie &, const imdbMovie &);
 
 int main()
 {
@@ -218,7 +221,7 @@ int main()
             FILE *fptr;
             char sentence[1000];
             string tmpSentence = "tconst\taverageRating\tnumVotes";
-            fptr = fopen("C:/Users/pajoh/Desktop/title.akas.txt", "w");
+            fptr = fopen("title.akas.txt", "w");
             if (fptr == NULL)
                 throw "Error!!! title.akas.txt could not be opened";
             strcpy(sentence, tmpSentence.c_str());
@@ -465,7 +468,7 @@ int menu(vector<user> &member, vector<imdbMovie> &film, bool &change)
         string username, password;
         user tmp;
         cout << "--------- Welcome to the IMDb Rating System ---------" << endl;
-        cout << "(1) Rating\n(2) Exit\nEnter a number : ";
+        cout << "(1) Rating\n(2) Top Movies\n(3) Exit\nEnter a number : ";
         cin >> number;
         //input validation
         while(cin.fail())
@@ -518,6 +521,9 @@ int menu(vector<user> &member, vector<imdbMovie> &film, bool &change)
             }
             return 1;
         case 2:
+            showTop(film);
+            return 1;
+        case 3:
             return 0;
         default:
             throw "\n\nError!!! You enter a number out of range";
@@ -529,4 +535,20 @@ int menu(vector<user> &member, vector<imdbMovie> &film, bool &change)
         pause;
         return 2;
     }
+}
+
+void showTop(vector<imdbMovie> film)
+{
+    clean;
+    cout << "row\ttitle\taverageRating" << endl;
+    vector<imdbMovie> tmp = film;
+    sort(tmp.begin(), tmp.end(), &comparator);
+    for(int i = 0; (i < 10) && (i < tmp.size()); i++)
+        cout << i + 1 << ") " << tmp[i].get_title() << '\t' << tmp[i].get_averageRating() << endl;
+    pause;
+}
+
+bool comparator(const imdbMovie &lhs, const imdbMovie &rhs)
+{
+    return lhs.get_averageRating() > rhs.get_averageRating();
 }
