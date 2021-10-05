@@ -103,7 +103,7 @@ public:
     }
     double get_averageRating() const
     {
-        return this->averageRating;
+        return round(this->averageRating * 10) / 10;
     }
     int get_numVotes() const
     {
@@ -135,7 +135,7 @@ public:
         cout << '\t';
         for (auto it = this->attributes.begin(); it != this->attributes.end(); it++)
             cout << *it << ' ';
-        cout << '\t' << boolalpha << this->isOriginalTitle << '\t' << this->averageRating << '\t' << this->numVotes << endl;
+        cout << '\t' << boolalpha << this->isOriginalTitle << '\t' << this->get_averageRating() << '\t' << this->numVotes << endl;
     }
 };
 class user
@@ -192,7 +192,6 @@ public:
     void Voting(vector<imdbMovie> &film, int row, double rate)
     {
         double new_rate = ((film[row].get_averageRating() * film[row].get_numVotes()) + rate) / (film[row].get_numVotes() + 1);
-        new_rate = round(new_rate * 10) / 10;
         film[row].set_averageRating(new_rate);
         film[row].set_numVotes(film[row].get_numVotes() + 1);
     }
