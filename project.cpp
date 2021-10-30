@@ -202,7 +202,7 @@ public:
 };
 
 vector<imdbMovie> readFile();
-bool vote(vector<imdbMovie> &, user &);
+bool vote(vector<imdbMovie> &,vector<user> &, int i);
 int menu(vector<user> &, vector<imdbMovie> &, bool &);
 void showTop(vector<imdbMovie>);
 bool comparator(const imdbMovie &, const imdbMovie &);
@@ -385,7 +385,7 @@ vector<imdbMovie> readFile()
     }
 }
 
-bool vote(vector<imdbMovie> &film, user &member)
+bool vote(vector<imdbMovie> &film, vector<user> &member, int i)
 {
     bool change = false;
     int row;
@@ -411,7 +411,7 @@ bool vote(vector<imdbMovie> &film, user &member)
                 throw "\n\nError!!! You enter a number out of range";
             if (row == 0)
                 break;
-            if (member.get_ratedFilm().count(film[row - 1].get_titleId()))
+            if (member[i].get_ratedFilm().count(film[row - 1].get_titleId()))
                 throw "\n\nError!!! You have already voted for this movie";
             cout << "\nrow : " << row << endl;
             row--;
@@ -442,8 +442,8 @@ bool vote(vector<imdbMovie> &film, user &member)
             }
             if (rate < 0 || rate > 10)
                 throw "\n\nError!!! You enter a number out of range";
-            member.Voting(film, row, rate);
-            member.addFilm(film[row].get_titleId());
+            member[i].Voting(film, row, rate);
+            member[i].addFilm(film[row].get_titleId());
             change = true;
         }
         catch (char const *message)
@@ -507,7 +507,7 @@ int menu(vector<user> &member, vector<imdbMovie> &film, bool &change)
                         tmp.set_ratedFilm(member[i].get_ratedFilm());
                         cout << "\n\nYou have successfully logged in" << endl;
                         pause;
-                        change = vote(film, tmp);
+                        change = vote(film, member, i);
                         return 1;
                     }
                 throw "\n\nWarning!!! Your information  is not found. Please login";
@@ -515,7 +515,7 @@ int menu(vector<user> &member, vector<imdbMovie> &film, bool &change)
                 member.push_back(tmp);
                 cout << "\n\nYour information  is successfully registered" << endl;
                 pause;
-                change = vote(film, tmp);
+                change = vote(film, member, member.size() - 1);
                 return 1;
             default:
                 throw "\n\nError!!! You enter a number out of range";
